@@ -19,11 +19,13 @@ async function getFeatured() {
     const res = await api.get("/products?featured=true&limit=4");
     return { products: res.data.products as any[], error: null as string | null };
   } catch (err: any) {
-    // Logs to the terminal running `npm run dev` — check there if products
-    // aren't showing up, it'll say exactly what went wrong (backend down,
-    // wrong API URL, etc).
-    console.error("Could not fetch featured products:", err.message);
-    return { products: [] as any[], error: err.message as string };
+    // Include the actual URL that was requested — a generic "Request failed
+    // with status code 404" doesn't say WHERE it looked, which is the one
+    // thing you need to debug a wrong NEXT_PUBLIC_API_URL.
+    const requestedUrl = (err.config?.baseURL || "") + (err.config?.url || "");
+    const detail = `${err.message} (requested: ${requestedUrl || "unknown URL"})`;
+    console.error("Could not fetch featured products:", detail);
+    return { products: [] as any[], error: detail as string };
   }
 }
 

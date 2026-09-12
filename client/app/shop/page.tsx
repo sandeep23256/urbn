@@ -11,8 +11,10 @@ async function getProducts(searchParams: { [key: string]: string | undefined }) 
     const res = await api.get(`/products?${params.toString()}`);
     return { products: res.data.products as any[], error: null as string | null };
   } catch (err: any) {
-    console.error("Could not fetch products:", err.message);
-    return { products: [] as any[], error: err.message as string };
+    const requestedUrl = (err.config?.baseURL || "") + (err.config?.url || "");
+    const detail = `${err.message} (requested: ${requestedUrl || "unknown URL"})`;
+    console.error("Could not fetch products:", detail);
+    return { products: [] as any[], error: detail as string };
   }
 }
 
