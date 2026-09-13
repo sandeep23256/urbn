@@ -24,7 +24,18 @@ export default function LoginPage() {
       setUser(res.data);
       router.push("/");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed");
+      if (err.response) {
+        // Backend responded with an error (wrong password, etc.) — its
+        // message is accurate, show it as-is.
+        setError(err.response.data?.message || "Login failed");
+      } else {
+        // No response at all usually means the browser blocked the request
+        // (CORS) or the backend is unreachable — very different from a
+        // wrong password, so say so explicitly instead of a generic message.
+        setError(
+          "Couldn't reach the server — this is usually a CORS issue (backend's CLIENT_URL doesn't match this site's URL) or the backend is down."
+        );
+      }
     } finally {
       setLoading(false);
     }

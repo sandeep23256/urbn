@@ -23,7 +23,13 @@ export default function RegisterPage() {
       setUser(res.data);
       router.push("/");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Registration failed");
+      if (err.response) {
+        setError(err.response.data?.message || "Registration failed");
+      } else {
+        setError(
+          "Couldn't reach the server — this is usually a CORS issue (backend's CLIENT_URL doesn't match this site's URL) or the backend is down."
+        );
+      }
     } finally {
       setLoading(false);
     }

@@ -23,9 +23,29 @@ app.post(
   require("./controllers/webhookController")
 );
 
+// Supports one or more comma-separated origins in CLIENT_URL, e.g.
+// "https://urbn-eta.vercel.app,http://localhost:3000" — handy if you want
+// both your deployed site and local dev to work without swapping env vars.
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000")
+  .split(",")
+  .map((o) => o.trim());
+
+// Logged at boot so a wrong/missing CLIENT_URL is visible directly in the
+// Render logs, instead of only showing up as a CORS error in the browser.
+console.log("CORS allowed origins:", allowedOrigins);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: function (origin, callback) {
+      // requests with no Origin header (curl, server-to-server, Postman)
+      // are always allowed — only browser requests send an Origin to check.
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS blocked request from origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
